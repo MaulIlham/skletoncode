@@ -27,6 +27,7 @@ func (h *Handler) Register(group *gin.RouterGroup) {
 	group.PATCH("/posts/:id", h.UpdatePosts)
 	group.GET("/posts", h.GetPosts)
 	group.POST("/posts", h.CreatePost)
+	group.GET("/ping", h.Ping)
 
 	group.GET("/search", h.SearchPosts)
 }

@@ -138,5 +138,9 @@ func (h *Handler) SearchPosts(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"data": r["hits"]})
 }
 
+func (h *Handler) Ping(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"Status": "OK"})
+}
+
 
 

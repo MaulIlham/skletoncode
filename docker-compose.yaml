@@ -1,0 +1,65 @@
+version: "3.3"
+
+services:
+  elasticdb:
+    image: mysql:8.0.27
+    container_name: elasticdb
+    command: --default-authentication-plugin=mysql_native_password
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: 'maulroot'
+      MYSQL_USER: 'maul'
+      MYSQL_PASSWORD: 'maul'
+      MYSQL_DATABASE: elastic-local
+      MYSQL_ROOT_HOST: '%'
+    ports:
+      - '3306:3306'
+    expose:
+      - '3306'
+    volumes:
+      - elastic-db:/var/lib/mysql
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: api
+    restart: on-failure
+    volumes:
+      - .:/api
+    environment:
+      MYSQL_USER: maul
+      MYSQL_PASSWORD: maul
+      MYSQL_HOST: host.docker.internal
+      MYSQL_PORT: 3306
+      MYSQL_DB: elastic-local
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+    ports:
+      - "8084:8084"
+    expose:
+      - "8084"
+    depends_on:
+      - elasticdb
+    extra_hosts:
+      - host.docker.internal:host-gateway
+  elasticsearch:
+    image: 'docker.elastic.co/elasticsearch/elasticsearch:7.10.2'
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+  kibana:
+    image: 'docker.elastic.co/kibana/kibana:7.10.2'
+    ports:
+      - "5601:5601"
+    hostname: kibana
+    depends_on:
+      - elasticsearch
+
+volumes:
+  elastic-db:
+    driver: local
+  esdata:
+    driver: local

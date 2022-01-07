@@ -6,6 +6,7 @@ import (
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
+	"log"
 	"os"
 )
 
@@ -22,6 +23,7 @@ func Init() {
 
 	esClient, err := elasticsearch.NewDefaultClient()
 	if err != nil {
+		log.Println(err)
 		logger.Err(err).Msg("Connection failed")
 		os.Exit(1)
 	}
