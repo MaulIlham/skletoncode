@@ -18,6 +18,8 @@ services:
       - '3306'
     volumes:
       - elastic-db:/var/lib/mysql
+    networks:
+      - elastic
   api:
     build:
       context: .
@@ -41,8 +43,11 @@ services:
       - elasticdb
     extra_hosts:
       - host.docker.internal:host-gateway
+    networks:
+      - elastic
   elasticsearch:
     image: 'docker.elastic.co/elasticsearch/elasticsearch:7.10.2'
+    container_name: codeelastic
     environment:
       - discovery.type=single-node
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
@@ -50,15 +55,24 @@ services:
       - "9200:9200"
     volumes:
       - esdata:/usr/share/elasticsearch/data
+    networks:
+      - elastic
   kibana:
     image: 'docker.elastic.co/kibana/kibana:7.10.2'
+    container_name: codekibana
     ports:
       - "5601:5601"
+    environment:
+      ELASTICSEARCH_URL: http://codeelastic:9200
+      ELASTICSEARCH_HOSTS: http://codeelastic:9200
     hostname: kibana
     depends_on:
       - elasticsearch
+    networks:
+      - elastic
   logstash:
     image: xiaochunping/logstash-input-jdbc-mysql:6.4.0
+    container_name: codelogstash
     environment:
       MYSQL_USER: maul
       MYSQL_PASSWORD: maul
@@ -69,16 +83,22 @@ services:
       - 9600:9600
       - 5044:5044
     volumes:
-      - ./logstash-input-jdbc.conf:/home/enigmacamp/Materi/github/golang/ELKExample/conf/logstash/pipelines/sync-posts.conf
+      - ./logstash-input-jdbc.conf:/conf/logstash/pipelines/sync-posts.conf
     extra_hosts:
       - host.docker.internal:host-gateway
     depends_on:
       - kibana
       - elasticdb
       - elasticsearch
+    networks:
+      - elastic
 
 volumes:
   elastic-db:
     driver: local
   esdata:
     driver: local
+
+networks:
+  elastic:
+    driver: bridge
