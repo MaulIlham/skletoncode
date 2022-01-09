@@ -57,6 +57,25 @@ services:
     hostname: kibana
     depends_on:
       - elasticsearch
+  logstash:
+    image: xiaochunping/logstash-input-jdbc-mysql:6.4.0
+    environment:
+      MYSQL_USER: maul
+      MYSQL_PASSWORD: maul
+      MYSQL_HOST: host.docker.internal
+      MYSQL_PORT: 3306
+      MYSQL_DB: elastic-local
+    ports:
+      - 9600:9600
+      - 5044:5044
+    volumes:
+      - ./logstash-input-jdbc.conf:/home/enigmacamp/Materi/github/golang/ELKExample/conf/logstash/pipelines/sync-posts.conf
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    depends_on:
+      - kibana
+      - elasticdb
+      - elasticsearch
 
 volumes:
   elastic-db:
